@@ -11,19 +11,27 @@ class GeminiService:
             raise ValueError("GOOGLE_API_KEY not found. Please set it in .env file.")
         
         genai.configure(api_key=self.api_key)
-        # Using gemini-flash-latest which was verified in check_models.py
-        self.model = genai.GenerativeModel('gemini-flash-latest')
+        
+        system_instruction = """
+        You are an Interview Copilot. Your goal is to help a candidate by providing 
+        concise, professional, and natural suggestions based on the interviewer's words.
+        - Be brief (1-2 sentences).
+        - Maintain context of the previous parts of the conversation.
+        - Note: The STT might mishear technical terms (e.g., "We're back" often means "Webpack"). 
+          Correct these mentally based on the technical context.
+        - provide high-level answer or talking points for technical questions.
+        """
+        
+        # Using gemini-flash-latest with system instruction
+        self.model = genai.GenerativeModel(
+            model_name='gemini-flash-latest',
+            system_instruction=system_instruction
+        )
         self.chat = self.model.start_chat(history=[])
 
     def get_response(self, transcript):
-        prompt = f"""
-        You are an Interview Copilot. Based on the following transcript of an interview, 
-        provide a concise, helpful suggestion or answer for the candidate to say.
-        Keep it natural, professional, and brief (1-2 sentences).
-        
-        Transcript: {transcript}
-        
-        Suggestion:
-        """
-        response = self.model.generate_content(prompt)
+        response = self.chat.send_message(transcript)
         return response.text.strip()
+
+    def reset_history(self):
+        self.chat = self.model.start_chat(history=[])
