@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+websockets
+pyaudio
+faster-whisper
+google-generativeai
+pyqt6
+python-dotenv
+numpy
